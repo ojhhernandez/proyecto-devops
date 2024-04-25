@@ -1,0 +1,32 @@
+# Use a specific version of Jenkins with JDK 17
+FROM jenkins/jenkins:2.440.3-jdk17
+
+# Run as root to install additional packages
+USER root
+
+# Update and install lsb-release, install Docker GPG key
+RUN apt-get update && apt-get install -y lsb-release \
+    && curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+    https://download.docker.com/linux/debian/gpg
+
+# Add Docker repository
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+  https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+
+# Install Docker CLI
+RUN apt-get update && apt-get install -y docker-ce-cli
+
+# Cleanup to reduce image size
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy plugin installation file and install plugins
+COPY plugins.txt /usr/share/jenkins/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/plugins.txt
+
+# Set environment variables to configure Jenkins
+ENV JENKINS_USER=admin \
+    JENKINS_PASS=admin123 \
+    JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+
+# Switch back to the jenkins user
+USER jenkins

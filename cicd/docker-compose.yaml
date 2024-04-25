@@ -1,6 +1,45 @@
 name: proyecto-devops
 services:
-   backend:
-     image: 
-     environment:
-     secrets:
+  gitlab:
+    profiles: ['not-start']
+    image: gitlab/gitlab-ee:16.10.1-ee.0
+    container_name: gitlab
+    restart: always
+    hostname: 'gitlab.carlosmarind.cl'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Add any other gitlab.rb configuration here, each on its own line
+        external_url 'https://gitlab.carlosmarind.cl'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '22:22'
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+    shm_size: '256m'
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile-jenkins
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+  nexus:
+    image: klo2k/nexus3:3.30.1-01
+    restart: always
+    volumes:
+      - nexus-data:/sonatype-work
+    ports:
+      - "8081:8081"
+      - "8085:8085"
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+  jenkins_home:
+  nexus-data:

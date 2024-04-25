@@ -1,18 +1,51 @@
 pipeline {
     agent any
-    stages {
-        stage('node pipeline') {
-            agent {
-                docker { image 'node:20.11.1-alpine3.19' }
-            }
-            stages {
-                stage('checkout') {
-                    steps {
-                        echo "hola mundo"
-                    }
 
+    stages {
+        stage('nodejs pipeline') {
+            agent {
+                docker {
+                    image 'node:20.11.1-alpine3.19'
                 }
             }
+            stages {
+                stage('Checkout') {
+                    steps {
+                        echo 'Clonando repositorio...'
+                        checkout scm
+                    }
+                }
+                stage('Instalación de dependencias') {
+                    steps {
+                        echo 'Instalando dependencias...'
+                        sh 'npm install'
+                    }
+                }
+                stage('Run tests') {
+                    steps {
+                        echo 'Testing...'
+                        sh 'npm test'
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        echo 'Building...'
+                        sh 'npm run build'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'El proceso ha finalizado exitosamente.'
+        }
+        failure {
+            echo 'El proceso ha fallado.'
+        }
+        always {
+            echo 'El pipeline ha terminado de ejecutar.'
         }
     }
 }
