@@ -1,11 +1,34 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import express from "express";
 import { dividir, multiplicar, restar, sumar } from "./calcular.js";
+
+
 
 const app = express();
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("hola mundo");
+});
+
+
+app.get("/info", (req, res) => {
+  
+  const env=process.env.ENVIRONMENT;
+  console.log(env);
+  res.send({
+    "entorno":env
+  });
+});
+
+app.get("/api", (req, res) => {
+  
+  const apikey=process.env.API_KEY;
+  console.log(apikey);
+  res.send({
+    "apikey":apikey
+  });
 });
 
 app.post("/calcular", (req, res) => {
